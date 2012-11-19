@@ -57,7 +57,9 @@ THRIFTCODE= \
 
 CSC=gmcs
 
+#if NET_2_0
 #MONO_DEFINES=/d:NET_2_0
+#endif
 
 all-local: Thrift.dll
 
