@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements. See the NOTICE file
  * distributed with this work for additional information
@@ -15,10 +15,6 @@
  * KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations
  * under the License.
- *
- * Contains some contributions under the Thrift Software License.
- * Please see doc/old-thrift-license.txt in the Thrift distribution for
- * details.
  */
 
 using System.Reflection;
@@ -28,11 +24,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("ThriftMSBuildTask")]
-[assembly: AssemblyDescription("MSBuild Task to generate csharp from .thrift files, and compile the code into a library: ThriftImpl.dll")]
+[assembly: AssemblyTitle("Thrift.WP7")]
+[assembly: AssemblyDescription("C# bindings for the Apache Thrift RPC system")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("The Apache Software Foundation")]
-[assembly: AssemblyProduct("ThriftMSBuildTask")]
+[assembly: AssemblyProduct("Thrift")]
 [assembly: AssemblyCopyright("The Apache Software Foundation")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -44,7 +40,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("5095e09d-7b95-4be1-b250-e1c1db1c485e")]
+[assembly: Guid("a343f89c-57dd-4fa8-a9c6-35391cd5f655")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -55,6 +51,5 @@ using System.Runtime.InteropServices;
 //
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
-// [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("0.9.0.*")]
-[assembly: AssemblyFileVersion("0.9.0.*")]
+[assembly: AssemblyVersion("0.9.0.0")]
+[assembly: AssemblyFileVersion("0.9.0.0")]

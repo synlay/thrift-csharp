@@ -36,6 +36,7 @@ THRIFTCODE= \
             src/Protocol/TMessage.cs \
             src/Protocol/TStruct.cs \
             src/Protocol/TBinaryProtocol.cs \
+            src/Protocol/TCompactProtocol.cs \
             src/Server/TThreadedServer.cs \
             src/Server/TThreadPoolServer.cs \
             src/Server/TSimpleServer.cs \
@@ -54,10 +55,11 @@ THRIFTCODE= \
             src/TProcessor.cs \
             src/TApplicationException.cs
 
-
 CSC=gmcs
 
+#if NET_2_0
 #MONO_DEFINES=/d:NET_2_0
+#endif
 
 all-local: Thrift.dll
 
@@ -71,4 +73,6 @@ EXTRA_DIST = \
              $(THRIFTCODE) \
              ThriftMSBuildTask \
              src/Thrift.csproj \
-             src/Thrift.sln
+             src/Thrift.sln \
+             src/Thrift.WP7.csproj \
+             src/Properties/AssemblyInfo.WP7.cs
