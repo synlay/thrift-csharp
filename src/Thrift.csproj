@@ -105,6 +105,8 @@
     <Compile Include="Transport\TFramedTransport.cs" />
     <Compile Include="Transport\THttpClient.cs" />
     <Compile Include="Transport\THttpHandler.cs" />
+    <Compile Include="Transport\TSSLServerSocket.cs" />
+    <Compile Include="Transport\TSSLSocket.cs" />
     <Compile Include="Transport\TServerSocket.cs" />
     <Compile Include="Transport\TServerTransport.cs" />
     <Compile Include="Transport\TSocket.cs" />
