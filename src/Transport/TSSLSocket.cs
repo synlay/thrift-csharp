@@ -59,7 +59,7 @@ namespace Thrift.Transport
         /// <param name="client">existing TCP Client</param>
         /// <param name="cert">SSL Certificate</param>
         public TSSLSocket(TcpClient client, X509Certificate cert)
-            :this (client, 0, cert, DefaultLogDelegate)
+            :this (client, cert, DefaultLogDelegate)
         {
         }
         public TSSLSocket(TcpClient client, X509Certificate cert, LogDelegate logDelegate)
@@ -75,7 +75,7 @@ namespace Thrift.Transport
         /// <param name="timeout">IO Timeouts</param>
         /// <param name="cert">SSl Certificate Filename</param>
         public TSSLSocket(string host, int port, int timeout, string cert)
-            : this(new TcpClient(host, port), timeout, X509Certificate.CreateFromCertFile(cert), DefaultLogDelegate)
+            : this(host, port, timeout, cert, DefaultLogDelegate)
         {
         }
         public TSSLSocket(string host, int port, int timeout, string cert, LogDelegate logDelegate)
