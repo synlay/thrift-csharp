@@ -46,7 +46,7 @@ namespace Thrift.Transport
         /// <summary>
         /// IO Timeout
         /// </summary>
-        private int timeout = 0;
+        private int timeout = System.Threading.Timeout.Infinite;
 
 		protected static void DefaultLogDelegate(string s)
 		{
@@ -59,7 +59,7 @@ namespace Thrift.Transport
         /// <param name="client">existing TCP Client</param>
         /// <param name="cert">SSL Certificate</param>
         public TSSLSocket(TcpClient client, X509Certificate cert)
-            :this (client, cert, DefaultLogDelegate)
+            :this (client, 0, cert, DefaultLogDelegate)
         {
         }
         public TSSLSocket(TcpClient client, X509Certificate cert, LogDelegate logDelegate)
@@ -72,7 +72,7 @@ namespace Thrift.Transport
         /// </summary>
         /// <param name="host">Hostname of server</param>
         /// <param name="port">Host port</param>
-        /// <param name="timeout">IO Timeouts</param>
+        /// <param name="timeout">IO Timeouts in ms: System.Threading.Timeout.Infinite or > 0</param>
         /// <param name="cert">SSl Certificate Filename</param>
         public TSSLSocket(string host, int port, int timeout, string cert)
             : this(host, port, timeout, cert, DefaultLogDelegate)
@@ -81,7 +81,6 @@ namespace Thrift.Transport
         public TSSLSocket(string host, int port, int timeout, string cert, LogDelegate logDelegate)
             : this(new TcpClient(host, port), timeout, X509Certificate.CreateFromCertFile(cert), logDelegate)
         {
-			// TODO: this.host correct???
 			this.host = host;
         }
 
@@ -89,7 +88,7 @@ namespace Thrift.Transport
         /// Initializes a new instance of the TSSLSocket class from an existing TCP Client        
         /// </summary>
         /// <param name="tcpclient">existing TCP Client</param>
-        /// <param name="iotimeout">IO Timeouts</param>
+        /// <param name="iotimeout">IO Timeouts in ms: System.Threading.Timeout.Infinite or > 0</param>
         /// <param name="cert">SSl Certificate</param>
         public TSSLSocket(TcpClient tcpclient, int iotimeout, X509Certificate cert)
             : this(tcpclient, iotimeout, cert, DefaultLogDelegate)
@@ -112,6 +111,8 @@ namespace Thrift.Transport
         {
             set
             {
+                if (!(value == System.Threading.Timeout.Infinite || value > 0))
+                    throw new ArgumentException("Timeout can be only be set to 'System.Threading.Timeout.Infinite' or a value > 0.", "Timeout");
                 this.client.ReceiveTimeout = this.client.SendTimeout = this.timeout = value;
             }
         }
@@ -146,15 +147,24 @@ namespace Thrift.Transport
               X509Chain chain,
               SslPolicyErrors sslPolicyErrors)
         {
+            return ValidateCertificate(sender, certificate, chain, sslPolicyErrors, DefaultLogDelegate);
+        }
+        public static bool ValidateCertificate(
+              object sender,
+              X509Certificate certificate,
+              X509Chain chain,
+              SslPolicyErrors sslPolicyErrors,
+              LogDelegate logDelegate)
+        {
             SslPolicyErrors errors = sslPolicyErrors;
             if (errors != SslPolicyErrors.None)
             {
-				DefaultLogDelegate("Certificate error: " + errors);
+                logDelegate("Certificate error: " + errors);
             }
 
             if ((errors & SslPolicyErrors.RemoteCertificateChainErrors) == SslPolicyErrors.RemoteCertificateChainErrors)
             {
-				DefaultLogDelegate("Certificate error: Certificate chain empty. Self signed certificate? but still continued");
+                logDelegate("Certificate error: Certificate chain empty. Self signed certificate? but still continued");
                 errors -= SslPolicyErrors.RemoteCertificateChainErrors;
             }
 
@@ -167,7 +177,7 @@ namespace Thrift.Transport
             {
                 return true;
             }
-			DefaultLogDelegate("Certificate error: " + sslPolicyErrors);
+            logDelegate("Certificate error: " + sslPolicyErrors);
 
             // Do not allow this client to communicate with unauthenticated servers.
             return false;
@@ -183,7 +193,7 @@ namespace Thrift.Transport
                 throw new TTransportException(TTransportException.ExceptionType.NotOpen, "Socket Not Open");
             }
 
-            this.SetupClient(host);
+            this.SetupClient(this.host);
         }
 
         /// <summary>
@@ -229,10 +239,14 @@ namespace Thrift.Transport
         /// <param name="stream">SSL Stream</param>
         protected static void DisplaySecurityLevel(SslStream stream)
         {
-			DefaultLogDelegate("Cipher: " + stream.CipherAlgorithm + " strength " + stream.CipherStrength);
-			DefaultLogDelegate("Hash: " + stream.HashAlgorithm + " strength " + stream.HashStrength);
-			DefaultLogDelegate("Key exchange: " + stream.KeyExchangeAlgorithm + " strength " + stream.KeyExchangeStrength);
-			DefaultLogDelegate("Protocol: " + stream.SslProtocol);
+            DisplaySecurityLevel(stream, DefaultLogDelegate);
+        }
+        protected static void DisplaySecurityLevel(SslStream stream, LogDelegate logDelegate)
+        {
+            logDelegate("Cipher: " + stream.CipherAlgorithm + " strength " + stream.CipherStrength);
+            logDelegate("Hash: " + stream.HashAlgorithm + " strength " + stream.HashStrength);
+            logDelegate("Key exchange: " + stream.KeyExchangeAlgorithm + " strength " + stream.KeyExchangeStrength);
+            logDelegate("Protocol: " + stream.SslProtocol);
         }
 
         /// <summary>
@@ -241,9 +255,13 @@ namespace Thrift.Transport
         /// <param name="stream">SSL Stream</param>
         protected static void DisplaySecurityServices(SslStream stream)
         {
-            DefaultLogDelegate("Is authenticated: " + stream.IsAuthenticated + " as server? " + stream.IsServer);
-            DefaultLogDelegate("IsSigned: " + stream.IsSigned);
-            DefaultLogDelegate("Is Encrypted: " + stream.IsEncrypted);
+            DisplaySecurityServices(stream, DefaultLogDelegate);
+        }
+        protected static void DisplaySecurityServices(SslStream stream, LogDelegate logDelegate)
+        {
+            logDelegate("Is authenticated: " + stream.IsAuthenticated + " as server? " + stream.IsServer);
+            logDelegate("IsSigned: " + stream.IsSigned);
+            logDelegate("Is Encrypted: " + stream.IsEncrypted);
         }
 
         /// <summary>
@@ -252,8 +270,12 @@ namespace Thrift.Transport
         /// <param name="stream">SSL Stream</param>
         protected static void DisplayStreamProperties(SslStream stream)
         {
-            DefaultLogDelegate("Can read: " + stream.CanRead + ", write " + stream.CanWrite);
-            DefaultLogDelegate("Can timeout: " + stream.CanTimeout);
+            DisplayStreamProperties(stream, DefaultLogDelegate);
+        }
+        protected static void DisplayStreamProperties(SslStream stream, LogDelegate logDelegate)
+        {
+            logDelegate("Can read: " + stream.CanRead + ", write " + stream.CanWrite);
+            logDelegate("Can timeout: " + stream.CanTimeout);
         }
 
         /// <summary>
@@ -262,28 +284,32 @@ namespace Thrift.Transport
         /// <param name="stream">SSL Stream</param>
         protected static void DisplayCertificateInformation(SslStream stream)
         {
-            DefaultLogDelegate("Certificate revocation list checked: " + stream.CheckCertRevocationStatus);
+            DisplayCertificateInformation(stream, DefaultLogDelegate);
+        }
+        protected static void DisplayCertificateInformation(SslStream stream, LogDelegate logDelegate)
+        {
+            logDelegate("Certificate revocation list checked: " + stream.CheckCertRevocationStatus);
 
             X509Certificate localCertificate = stream.LocalCertificate;
 
             if (stream.LocalCertificate != null)
             {
-                DefaultLogDelegate("Local cert was issued to " + localCertificate.Subject + " and is valid from " + localCertificate.GetEffectiveDateString() + " until " + localCertificate.GetExpirationDateString() + ".");
+                logDelegate("Local cert was issued to " + localCertificate.Subject + " and is valid from " + localCertificate.GetEffectiveDateString() + " until " + localCertificate.GetExpirationDateString() + ".");
             }
             else
             {
-                DefaultLogDelegate("Local certificate is null.");
+                logDelegate("Local certificate is null.");
             }
 
             X509Certificate remoteCertificate = stream.RemoteCertificate;
 
             if (stream.RemoteCertificate != null)
             {
-                DefaultLogDelegate("Remote cert was issued to " + remoteCertificate.Subject + " and is valid from " + remoteCertificate.GetEffectiveDateString() + " until " + remoteCertificate.GetExpirationDateString() + ".");
+                logDelegate("Remote cert was issued to " + remoteCertificate.Subject + " and is valid from " + remoteCertificate.GetEffectiveDateString() + " until " + remoteCertificate.GetExpirationDateString() + ".");
             }
             else
             {
-                DefaultLogDelegate("Remote certificate is null.");
+                logDelegate("Remote certificate is null.");
             }
         }
 
@@ -297,7 +323,7 @@ namespace Thrift.Transport
             {
                 ////TODO: setup 2 way certificate handshake
 
-                if (host == null)
+                if (targethost == null)
                 {
                     this.sslStream = new SslStream(this.client.GetStream(), false);
                     this.sslStream.AuthenticateAsServer(this.certificate, false, SslProtocols.Tls, true);
@@ -313,10 +339,10 @@ namespace Thrift.Transport
                 }
 
                 // Display the properties and settings for the authenticated stream.
-                DisplaySecurityLevel(this.sslStream);
-                DisplaySecurityServices(this.sslStream);
-                DisplayCertificateInformation(this.sslStream);
-                DisplayStreamProperties(this.sslStream);
+                DisplaySecurityLevel(this.sslStream, this.logDelegate);
+                DisplaySecurityServices(this.sslStream, this.logDelegate);
+                DisplayCertificateInformation(this.sslStream, this.logDelegate);
+                DisplayStreamProperties(this.sslStream, this.logDelegate);
 
                 this.sslStream.ReadTimeout = this.timeout;
                 this.sslStream.WriteTimeout = this.timeout;
@@ -326,8 +352,8 @@ namespace Thrift.Transport
             }
             catch (AuthenticationException e)
             {
-                DefaultLogDelegate(e.ToString());
-                DefaultLogDelegate("Authentication failed - closing the connection.");
+                this.logDelegate(e.ToString());
+                this.logDelegate("Authentication failed - closing the connection.");
 
                 this.sslStream.Close();
                 this.client.Close();
